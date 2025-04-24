@@ -32,7 +32,7 @@ const App = () => {
   const createNewChat = (initialMessage = "") => {
     const newChat = {
       id: uuidv4(),
-      displayId: `Chat ${new Date().toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString()}`,
+      displayId: `Chat ${new Date().toLocaleDateString("fr-FR")} ${new Date().toLocaleTimeString()}`,
       messages: initialMessage
         ? [
             {

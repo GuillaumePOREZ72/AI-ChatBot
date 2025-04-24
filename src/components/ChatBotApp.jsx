@@ -1,9 +1,13 @@
-/* eslint-disable react/prop-types */
+
 
 import "./ChatBotApp.css";
 import { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
+
+
+const GOOGLE_AI_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 const ChatBotApp = ({
   onGoBack,
@@ -72,17 +76,17 @@ const ChatBotApp = ({
       setIsTyping(true);
 
       const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-exp:generateContent",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer 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`,
+            Authorization: `Bearer ${GOOGLE_AI_KEY}`,
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: "gemini-2.0-flash-exp",
             messages: [{ role: "user", content: inputValue }],
-            max_tokens: 500,
+            max_tokens: 2000,
           }),
         }
       );
@@ -228,5 +232,26 @@ const ChatBotApp = ({
     </div>
   );
 };
+ChatBotApp.propTypes = {
+  onGoBack: PropTypes.func.isRequired,
+  chats: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      displayId: PropTypes.string.isRequired,
+      messages: PropTypes.arrayOf(
+        PropTypes.shape({
+          type: PropTypes.string.isRequired,
+          text: PropTypes.string.isRequired,
+          timeStamp: PropTypes.string.isRequired,
+        })
+      ),
+    })
+  ).isRequired,
+  setChats: PropTypes.func.isRequired,
+  activeChat: PropTypes.string,
+  setActiveChat: PropTypes.func.isRequired,
+  onNewChat: PropTypes.func.isRequired,
+};
 
 export default ChatBotApp;
+
