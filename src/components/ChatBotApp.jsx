@@ -8,6 +8,28 @@ import data from "@emoji-mart/data";
 
 
 const GOOGLE_AI_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+
+// Fonction pour lister les modèles disponibles
+const listAvailableModels = async () => {
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models?key=" + GOOGLE_AI_KEY,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const data = await response.json();
+    console.log("Available models:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching models:", error);
+  }
+};
 
 const ChatBotApp = ({
   onGoBack,
@@ -23,6 +45,27 @@ const ChatBotApp = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showChatList, setShowChatList] = useState(false);
   const chatEndRef = useRef(null);
+
+  const testListModels = async () => {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${GOOGLE_AI_KEY}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      const data = await response.json();
+      console.log("Available models:", data);
+      alert("Check console for available models");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error fetching models: " + error.message);
+    }
+  };
 
   useEffect(() => {
     const activeChatObj = chats.find((chat) => chat.id === activeChat);
@@ -45,7 +88,7 @@ const ChatBotApp = ({
   };
 
   const sendMessage = async () => {
-    if (inputValue.trim === "") return;
+    if (inputValue.trim() === "") return;
 
     const newMessage = {
       type: "prompt",
@@ -53,81 +96,61 @@ const ChatBotApp = ({
       timeStamp: new Date().toLocaleTimeString(),
     };
 
-    if (!activeChat) {
-      onNewChat(inputValue);
-      setInputValue("");
-    } else {
+    try {
+      if (!activeChat) {
+        onNewChat(inputValue);
+        setInputValue("");
+        return;
+      }
+
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
       localStorage.setItem(activeChat, JSON.stringify(updatedMessages));
       setInputValue("");
-
-      const updatedChats = chats.map((chat) => {
-        if (chat.id === activeChat) {
-          return {
-            ...chat,
-            messages: updatedMessages,
-          };
-        }
-        return chat;
-      });
-      setChats(updatedChats);
-      localStorage.setItem("chats", JSON.stringify(updatedChats));
       setIsTyping(true);
 
+      // URL corrigée
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-exp:generateContent",
+        "https://cors-anywhere.herokuapp.com/https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + GOOGLE_AI_KEY,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${GOOGLE_AI_KEY}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Origin": "http://localhost:5173"
           },
           body: JSON.stringify({
-            model: "gemini-2.0-flash-exp",
-            messages: [{ role: "user", content: inputValue }],
-            max_tokens: 2000,
-          }),
+            contents: [{
+              parts: [{
+                text: inputValue
+              }]
+            }]
+          })
         }
       );
 
       const data = await response.json();
 
-      // Check if data and necessary properties exist before accessing them
-      if (
-        data &&
-        data.choices &&
-        Array.isArray(data.choices) &&
-        data.choices.length > 0 &&
-        data.choices[0].message &&
-        data.choices[0].message.content
-      ) {
-        const chatResponse = data.choices[0].message.content.trim();
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'API request failed');
+      }
 
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        const chatResponse = data.candidates[0].content.parts[0].text.trim();
+        
         const newResponse = {
           type: "response",
           text: chatResponse,
           timeStamp: new Date().toLocaleTimeString(),
         };
+
         const updatedMessagesWithResponse = [...updatedMessages, newResponse];
         setMessages(updatedMessagesWithResponse);
-        localStorage.setItem(
-          activeChat,
-          JSON.stringify(updatedMessagesWithResponse)
-        );
-        setIsTyping(false);
-
-        const updatedChatsWithResponse = chats.map((chat) => {
-          if (chat.id === activeChat) {
-            return { ...chat, messages: updatedMessagesWithResponse };
-          }
-          return chat;
-        });
-        setChats(updatedChatsWithResponse);
-      } else {
-        // Handle the error gracefully
-        console.error("Invalid API response:", data);
+        localStorage.setItem(activeChat, JSON.stringify(updatedMessagesWithResponse));
       }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -163,6 +186,7 @@ const ChatBotApp = ({
       <div className={`chat-list ${showChatList ? "show" : ""}`}>
         <div className="chat-list-header">
           <h2>Chat List</h2>
+          <button onClick={testListModels}>Test List Models</button>
           <i className="bx bx-edit-alt new-chat" onClick={onNewChat}></i>
           <i
             className="bx bx-x-circle close-list"
@@ -244,7 +268,7 @@ ChatBotApp.propTypes = {
           text: PropTypes.string.isRequired,
           timeStamp: PropTypes.string.isRequired,
         })
-      ),
+      ).isRequired,
     })
   ).isRequired,
   setChats: PropTypes.func.isRequired,
