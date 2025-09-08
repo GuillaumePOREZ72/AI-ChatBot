@@ -5,31 +5,9 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useUser, SignOutButton } from "@clerk/clerk-react";
 import { getUserData, setUserData, removeUserData } from "../utils/userStorage";
+import ThemeToggle from "./ThemeToggle";
 
 const GOOGLE_AI_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
-
-// Fonction pour lister les modèles disponibles
-const listAvailableModels = async () => {
-  try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models?key=" +
-        GOOGLE_AI_KEY,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const data = await response.json();
-    console.log("Available models:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching models:", error);
-  }
-};
 
 const ChatBotApp = ({
   onGoBack,
@@ -45,28 +23,8 @@ const ChatBotApp = ({
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showChatList, setShowChatList] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const chatEndRef = useRef(null);
-
-  const testListModels = async () => {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${GOOGLE_AI_KEY}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-      console.log("Available models:", data);
-      alert("Check console for available models");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error fetching models: " + error.message);
-    }
-  };
 
   useEffect(() => {
     const activeChatObj = chats.find((chat) => chat.id === activeChat);
@@ -91,15 +49,18 @@ const ChatBotApp = ({
   const sendMessage = async () => {
     if (inputValue.trim() === "") return;
 
+    // Sauvegarder le message utilisateur pour éviter de le perdre
+    const userMessageText = inputValue.trim();
+
     const newMessage = {
       type: "prompt",
-      text: inputValue,
+      text: userMessageText,
       timeStamp: new Date().toLocaleTimeString(),
     };
 
     try {
       if (!activeChat) {
-        onNewChat(inputValue);
+        onNewChat(userMessageText);
         setInputValue("");
         return;
       }
@@ -110,51 +71,108 @@ const ChatBotApp = ({
       setInputValue("");
       setIsTyping(true);
 
-      // URL corrigée
-      const response = await fetch(
-        "https://cors-anywhere.herokuapp.com/https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" +
-          GOOGLE_AI_KEY,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Origin: "http://localhost:5173",
-          },
-          body: JSON.stringify({
-            contents: [
+      console.log("🚀 Envoi du message à Gemini:", userMessageText);
+      console.log("🔑 Clé API:", GOOGLE_AI_KEY ? "Présente" : "Manquante");
+
+      // NOUVELLE URL DIRECTE avec le bon nom de modèle
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_AI_KEY}`;
+
+      console.log("🌐 URL API:", apiUrl);
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
               {
-                parts: [
-                  {
-                    text: inputValue,
-                  },
-                ],
+                text: userMessageText,
               },
             ],
-          }),
-        }
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        },
+      };
+
+      console.log(
+        "📦 Corps de la requête:",
+        JSON.stringify(requestBody, null, 2)
+      );
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log(
+        "📡 Statut de la réponse:",
+        response.status,
+        response.statusText
       );
 
       const data = await response.json();
+      console.log("📥 Données reçues:", data);
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "API request failed");
+        const errorMessage =
+          data.error?.message ||
+          `Erreur API: ${response.status} ${response.statusText}`;
+        console.error("❌ Erreur API:", errorMessage);
+        throw new Error(errorMessage);
       }
 
-      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        const chatResponse = data.candidates[0].content.parts[0].text.trim();
+      // Vérifier la structure de la réponse
+      if (data.candidates && data.candidates.length > 0) {
+        const candidate = data.candidates[0];
 
-        const newResponse = {
-          type: "response",
-          text: chatResponse,
-          timeStamp: new Date().toLocaleTimeString(),
-        };
+        if (
+          candidate.content &&
+          candidate.content.parts &&
+          candidate.content.parts.length > 0
+        ) {
+          const chatResponse = candidate.content.parts[0].text.trim();
+          console.log("✅ Réponse de Gemini:", chatResponse);
 
-        const updatedMessagesWithResponse = [...updatedMessages, newResponse];
-        setMessages(updatedMessagesWithResponse);
-        setUserData(user.id, `chat_${activeChat}`, updatedMessagesWithResponse);
+          const newResponse = {
+            type: "response",
+            text: chatResponse,
+            timeStamp: new Date().toLocaleTimeString(),
+          };
+
+          const updatedMessagesWithResponse = [...updatedMessages, newResponse];
+          setMessages(updatedMessagesWithResponse);
+          setUserData(
+            user.id,
+            `chat_${activeChat}`,
+            updatedMessagesWithResponse
+          );
+        } else {
+          throw new Error(
+            "Structure de réponse inattendue: pas de contenu dans les parts"
+          );
+        }
+      } else {
+        throw new Error("Structure de réponse inattendue: pas de candidats");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("💥 Erreur complète:", error);
+
+      // Afficher l'erreur à l'utilisateur
+      const errorResponse = {
+        type: "response",
+        text: `❌ Erreur: ${error.message}\n\nVérifiez la console pour plus de détails.`,
+        timeStamp: new Date().toLocaleTimeString(),
+      };
+
+      const updatedMessagesWithError = [...messages, newMessage, errorResponse];
+      setMessages(updatedMessagesWithError);
+      setUserData(user.id, `chat_${activeChat}`, updatedMessagesWithError);
     } finally {
       setIsTyping(false);
     }
@@ -193,14 +211,21 @@ const ChatBotApp = ({
 
   return (
     <div className="chat-app">
-      <div className={`chat-list ${showChatList ? "show" : ""}`}>
+      <div
+        className={`chat-list ${showChatList ? "show" : ""} ${
+          !isSidebarVisible ? "hidden" : ""
+        }`}
+      >
         <div className="chat-list-header">
           <h2>Chat List</h2>
-          <button onClick={testListModels}>Test List Models</button>
           <i className="bx bx-edit-alt new-chat" onClick={onNewChat}></i>
           <i
             className="bx bx-x-circle close-list"
-            onClick={() => setShowChatList(false)}
+            onClick={() => {
+              setShowChatList(false);
+              setIsSidebarVisible(false);
+            }}
+            title="Fermer la sidebar"
           ></i>
         </div>
         {chats.map((chat) => (
@@ -253,7 +278,15 @@ const ChatBotApp = ({
             </div>
           </div>
           <div className="chat-title-right">
-            <i className="bx bx-menu" onClick={() => setShowChatList(true)}></i>
+            <i
+              className="bx bx-menu"
+              onClick={() => {
+                setShowChatList(true);
+                setIsSidebarVisible(true);
+              }}
+              title="Ouvrir la sidebar"
+            ></i>
+            <ThemeToggle />
             <SignOutButton>
               <i
                 className="bx bx-log-out logout-btn"

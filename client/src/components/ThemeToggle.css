@@ -1,0 +1,168 @@
+/**
+ * STYLES DU BOUTON DE BASCULEMENT DU THÈME
+ * 
+ * On utilise nos variables CSS définies dans themes.css
+ * Ainsi, le bouton s'adapte automatiquement au thème actuel !
+ */
+
+.theme-toggle {
+  /* === STRUCTURE DE BASE === */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  
+  /* === APPARENCE === */
+  background: var(--glass-bg);              /* Arrière-plan glassmorphism */
+  border: 1px solid var(--glass-border);   /* Bordure subtile */
+  border-radius: 25px;                     /* Coins arrondis */
+  color: var(--text-primary);              /* Couleur du texte */
+  
+  /* === EFFETS VISUELS === */
+  backdrop-filter: var(--glass-blur);      /* Effet de flou */
+  box-shadow: 0 4px 12px var(--shadow-color); /* Ombre */
+  
+  /* === INTERACTIONS === */
+  cursor: pointer;
+  transition: all 0.3s ease;               /* Transitions fluides */
+  
+  /* === ACCESSIBILITÉ === */
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;                           /* On gère le focus nous-mêmes */
+}
+
+/**
+ * ÉTAT HOVER (survol)
+ * 
+ * Quand l'utilisateur survole le bouton avec la souris
+ */
+.theme-toggle:hover {
+  background: var(--active-bg);            /* Arrière-plan plus visible */
+  border-color: var(--border-focus);      /* Bordure colorée */
+  transform: translateY(-2px);            /* Légère élévation */
+  box-shadow: 0 6px 20px var(--shadow-color); /* Ombre plus prononcée */
+}
+
+/**
+ * ÉTAT FOCUS (focus clavier)
+ * 
+ * Pour l'accessibilité : quand l'utilisateur navigue au clavier
+ */
+.theme-toggle:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3); /* Anneau de focus */
+}
+
+/**
+ * ÉTAT ACTIVE (clic)
+ * 
+ * Feedback visuel quand l'utilisateur clique
+ */
+.theme-toggle:active {
+  transform: translateY(0);               /* Retour à la position normale */
+  box-shadow: 0 2px 8px var(--shadow-color); /* Ombre réduite */
+}
+
+/**
+ * ICÔNE DU THÈME
+ * 
+ * Container pour l'icône (soleil ou lune)
+ */
+.theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;        /* Animation de rotation */
+}
+
+/**
+ * ANIMATION DE L'ICÔNE AU HOVER
+ * 
+ * Petite rotation pour rendre l'interaction plus vivante
+ */
+.theme-toggle:hover .theme-toggle-icon {
+  transform: rotate(15deg);               /* Légère rotation */
+}
+
+/**
+ * TEXTE DU BOUTON
+ * 
+ * Le texte "Clair" ou "Sombre" à côté de l'icône
+ */
+.theme-toggle-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;                  /* Espacement des lettres */
+  text-transform: uppercase;              /* Majuscules */
+}
+
+/**
+ * RESPONSIVE DESIGN
+ * 
+ * Adaptations pour les différentes tailles d'écran
+ */
+
+/* Tablettes et petits écrans */
+@media (max-width: 768px) {
+  .theme-toggle {
+    padding: 0.5rem 0.8rem;
+    gap: 0.4rem;
+  }
+  
+  .theme-toggle-icon {
+    font-size: 1.1rem;
+  }
+  
+  .theme-toggle-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* Très petits écrans (mobiles) */
+@media (max-width: 500px) {
+  .theme-toggle {
+    padding: 0.5rem;
+    min-width: 44px;                      /* Taille minimum pour le touch */
+  }
+  
+  /* Masquer le texte sur très petits écrans */
+  .theme-toggle-text {
+    display: none;
+  }
+  
+  .theme-toggle-icon {
+    font-size: 1.3rem;
+  }
+}
+
+/**
+ * VARIANTES DE COULEUR POUR DIFFÉRENTS CONTEXTES
+ * 
+ * Si on veut utiliser le bouton dans différents endroits
+ * avec des styles légèrement différents
+ */
+
+/* Version compacte (juste l'icône) */
+.theme-toggle.compact {
+  padding: 0.5rem;
+  gap: 0;
+}
+
+.theme-toggle.compact .theme-toggle-text {
+  display: none;
+}
+
+/* Version pour la sidebar */
+.theme-toggle.sidebar {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: var(--hover-bg);
+}
+
+.theme-toggle.sidebar:hover {
+  background: var(--active-bg);
+}

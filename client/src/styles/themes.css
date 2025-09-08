@@ -1,0 +1,143 @@
+/**
+ * VARIABLES CSS POUR LES THÈMES
+ * 
+ * Les variables CSS (custom properties) commencent par --
+ * Elles permettent de stocker des valeurs réutilisables.
+ * 
+ * Syntaxe : --nom-variable: valeur;
+ * Usage : color: var(--nom-variable);
+ * 
+ * L'avantage : changer une variable change automatiquement
+ * tous les endroits où elle est utilisée !
+ */
+
+/**
+ * THÈME SOMBRE (par défaut)
+ * 
+ * On définit toutes les couleurs pour le thème sombre.
+ * Ces variables seront utilisées dans tous nos composants.
+ */
+:root,
+.dark-theme {
+  /* === COULEURS PRINCIPALES === */
+  --bg-primary: #0d111a;           /* Arrière-plan principal (très sombre) */
+  --bg-secondary: #131927;         /* Arrière-plan secondaire (un peu plus clair) */
+  --bg-tertiary: #161c2c;          /* Arrière-plan tertiaire (sidebar, inputs) */
+  --bg-chat: #1a1f2e;              /* Arrière-plan de la zone de chat */
+  
+  /* === COULEURS DE TEXTE === */
+  --text-primary: #ffffff;         /* Texte principal (blanc) */
+  --text-secondary: #a0a0a0;       /* Texte secondaire (gris clair) */
+  --text-muted: rgba(255, 255, 255, 0.7); /* Texte atténué */
+  --text-accent: #7b8ebc;          /* Texte d'accent (bleu gris) */
+  
+  /* === COULEURS D'INTERFACE === */
+  --border-color: rgba(255, 255, 255, 0.1);  /* Bordures subtiles */
+  --border-focus: #667eea;         /* Bordures en focus */
+  --shadow-color: rgba(0, 0, 0, 0.3); /* Ombres */
+  
+  /* === COULEURS INTERACTIVES === */
+  --hover-bg: rgba(255, 255, 255, 0.05);     /* Arrière-plan au survol */
+  --active-bg: rgba(102, 126, 234, 0.1);     /* Arrière-plan actif */
+  
+  /* === COULEURS DES MESSAGES === */
+  --message-user-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --message-ai-bg: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  
+  /* === COULEURS SPÉCIALES === */
+  --success-color: #4ade80;        /* Vert pour succès */
+  --error-color: #ff6b6b;          /* Rouge pour erreurs */
+  --warning-color: #fbbf24;        /* Jaune pour avertissements */
+  
+  /* === GLASSMORPHISM === */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(10px);
+}
+
+/**
+ * THÈME CLAIR
+ * 
+ * On re définit les mêmes variables avec des couleurs claires.
+ * Quand la classe .light-theme est appliquée, ces valeurs
+ * remplacent celles du thème sombre.
+ */
+.light-theme {
+  /* === COULEURS PRINCIPALES === */
+  --bg-primary: #ffffff;           /* Arrière-plan principal (blanc) */
+  --bg-secondary: #f8fafc;         /* Arrière-plan secondaire (gris très clair) */
+  --bg-tertiary: #f1f5f9;          /* Arrière-plan tertiaire */
+  --bg-chat: #fefefe;              /* Arrière-plan de la zone de chat */
+  
+  /* === COULEURS DE TEXTE === */
+  --text-primary: #1a202c;         /* Texte principal (sombre) */
+  --text-secondary: #4a5568;       /* Texte secondaire (gris) */
+  --text-muted: rgba(26, 32, 44, 0.7); /* Texte atténué */
+  --text-accent: #4a5568;          /* Texte d'accent */
+  
+  /* === COULEURS D'INTERFACE === */
+  --border-color: rgba(0, 0, 0, 0.1);        /* Bordures subtiles */
+  --border-focus: #667eea;         /* Bordures en focus (même couleur) */
+  --shadow-color: rgba(0, 0, 0, 0.1); /* Ombres plus douces */
+  
+  /* === COULEURS INTERACTIVES === */
+  --hover-bg: rgba(0, 0, 0, 0.05);           /* Arrière-plan au survol */
+  --active-bg: rgba(102, 126, 234, 0.1);     /* Arrière-plan actif */
+  
+  /* === COULEURS DES MESSAGES === */
+  --message-user-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --message-ai-bg: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  
+  /* === COULEURS SPÉCIALES === */
+  --success-color: #10b981;        /* Vert plus foncé */
+  --error-color: #ef4444;          /* Rouge plus foncé */
+  --warning-color: #f59e0b;        /* Jaune plus foncé */
+  
+  /* === GLASSMORPHISM === */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-blur: blur(10px);
+}
+
+/**
+ * TRANSITIONS GLOBALES
+ * 
+ * On ajoute des transitions fluides pour que le changement
+ * de thème soit animé et agréable à l'œil.
+ */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/**
+ * STYLES DE BASE AVEC VARIABLES
+ * 
+ * On applique les variables aux éléments de base.
+ * Maintenant, quand le thème change, ces éléments
+ * changent automatiquement de couleur !
+ */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Scrollbars personnalisées pour les deux thèmes */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-focus);
+}
