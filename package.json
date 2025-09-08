@@ -1,5 +1,5 @@
 {
-  "name": "ai-chat-bot-monorepo",
+  "name": "ai-chat-bot",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
     "build:server": "cd server && npm run build"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.46.1",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "dotenv": "^16.4.5",
@@ -25,12 +26,12 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
+    "concurrently": "^9.2.1",
     "eslint": "^9.15.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.12.0",
-    "vite": "^5.4.11",
-    "concurrently": "^9.2.1"
+    "vite": "^5.4.11"
   }
 }

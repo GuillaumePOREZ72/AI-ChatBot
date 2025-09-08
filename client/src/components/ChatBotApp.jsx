@@ -1,11 +1,9 @@
-
-
 import "./ChatBotApp.css";
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
-
+import { useUser, SignOutButton } from "@clerk/clerk-react";
 
 const GOOGLE_AI_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
@@ -14,12 +12,13 @@ const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 const listAvailableModels = async () => {
   try {
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models?key=" + GOOGLE_AI_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models?key=" +
+        GOOGLE_AI_KEY,
       {
         method: "GET",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -39,6 +38,7 @@ const ChatBotApp = ({
   setActiveChat,
   onNewChat,
 }) => {
+  const { user } = useUser();
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState(chats[0]?.messages || []);
   const [isTyping, setIsTyping] = useState(false);
@@ -53,8 +53,8 @@ const ChatBotApp = ({
         {
           method: "GET",
           headers: {
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -111,32 +111,37 @@ const ChatBotApp = ({
 
       // URL corrigée
       const response = await fetch(
-        "https://cors-anywhere.herokuapp.com/https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + GOOGLE_AI_KEY,
+        "https://cors-anywhere.herokuapp.com/https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" +
+          GOOGLE_AI_KEY,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Origin": "http://localhost:5173"
+            Origin: "http://localhost:5173",
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: inputValue
-              }]
-            }]
-          })
+            contents: [
+              {
+                parts: [
+                  {
+                    text: inputValue,
+                  },
+                ],
+              },
+            ],
+          }),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'API request failed');
+        throw new Error(data.error?.message || "API request failed");
       }
 
       if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
         const chatResponse = data.candidates[0].content.parts[0].text.trim();
-        
+
         const newResponse = {
           type: "response",
           text: chatResponse,
@@ -145,10 +150,13 @@ const ChatBotApp = ({
 
         const updatedMessagesWithResponse = [...updatedMessages, newResponse];
         setMessages(updatedMessagesWithResponse);
-        localStorage.setItem(activeChat, JSON.stringify(updatedMessagesWithResponse));
+        localStorage.setItem(
+          activeChat,
+          JSON.stringify(updatedMessagesWithResponse)
+        );
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setIsTyping(false);
     }
@@ -196,7 +204,9 @@ const ChatBotApp = ({
         {chats.map((chat) => (
           <div
             key={chat.id}
-            className={`chat-list-item ${chat.id === activeChat ? "active" : ""}`}
+            className={`chat-list-item ${
+              chat.id === activeChat ? "active" : ""
+            }`}
             onClick={() => handleSelectChat(chat.id)}
           >
             <h4>{chat.displayId}</h4>
@@ -212,10 +222,22 @@ const ChatBotApp = ({
       </div>
       <div className="chat-window">
         <div className="chat-title">
-          <h3>Chat With AI</h3>
-          <i className="bx bx-menu" onClick={() => setShowChatList(true)}></i>
-
-          <i className="bx bx-arrow-back arrow" onClick={onGoBack}></i>
+          <div className="chat-title-left">
+            <h3>Chat With AI</h3>
+            <span className="user-info">
+              👋 {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+            </span>
+          </div>
+          <div className="chat-title-right">
+            <i className="bx bx-menu" onClick={() => setShowChatList(true)}></i>
+            <SignOutButton>
+              <i
+                className="bx bx-log-out logout-btn"
+                title="Se déconnecter"
+              ></i>
+            </SignOutButton>
+            <i className="bx bx-arrow-back arrow" onClick={onGoBack}></i>
+          </div>
         </div>
         <div className="chat">
           {messages.map((message, index) => (
@@ -278,4 +300,3 @@ ChatBotApp.propTypes = {
 };
 
 export default ChatBotApp;
-

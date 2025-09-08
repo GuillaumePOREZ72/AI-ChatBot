@@ -79,7 +79,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-right: 2rem;
+  padding: 0 2rem;
+}
+
+.chat-title-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-title-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.logout-btn {
+  font-size: 1.8rem;
+  color: #ff6b6b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.logout-btn:hover {
+  color: #ff5252;
+  background-color: rgba(255, 107, 107, 0.1);
+  transform: scale(1.1);
 }
 
 .chat-title h3 {

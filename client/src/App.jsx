@@ -1,5 +1,6 @@
 import ChatBotStart from "./components/ChatBotStart";
 import ChatBotApp from "./components/ChatBotApp";
+import AuthWrapper from "./components/AuthWrapper";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -32,7 +33,9 @@ const App = () => {
   const createNewChat = (initialMessage = "") => {
     const newChat = {
       id: uuidv4(),
-      displayId: `Chat ${new Date().toLocaleDateString("fr-FR")} ${new Date().toLocaleTimeString()}`,
+      displayId: `Chat ${new Date().toLocaleDateString(
+        "fr-FR"
+      )} ${new Date().toLocaleTimeString()}`,
       messages: initialMessage
         ? [
             {
@@ -52,20 +55,22 @@ const App = () => {
   };
 
   return (
-    <div className="container">
-      {isChatting ? (
-        <ChatBotApp
-          onGoBack={handleGoBack}
-          chats={chats}
-          setChats={setChats}
-          activeChat={activeChat}
-          setActiveChat={setActiveChat}
-          onNewChat={createNewChat}
-        />
-      ) : (
-        <ChatBotStart onStartChat={handleStartChat} />
-      )}
-    </div>
+    <AuthWrapper>
+      <div className="container">
+        {isChatting ? (
+          <ChatBotApp
+            onGoBack={handleGoBack}
+            chats={chats}
+            setChats={setChats}
+            activeChat={activeChat}
+            setActiveChat={setActiveChat}
+            onNewChat={createNewChat}
+          />
+        ) : (
+          <ChatBotStart onStartChat={handleStartChat} />
+        )}
+      </div>
+    </AuthWrapper>
   );
 };
 
