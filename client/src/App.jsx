@@ -3,20 +3,34 @@ import ChatBotApp from "./components/ChatBotApp";
 import AuthWrapper from "./components/AuthWrapper";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useUser } from "@clerk/clerk-react";
+import {
+  getUserData,
+  setUserData,
+  migrateExistingData,
+} from "./utils/userStorage";
 
 const App = () => {
+  const { user, isLoaded } = useUser();
   const [isChatting, setIsChatting] = useState(false);
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
 
+  // Charger les chats de l'utilisateur connecté
   useEffect(() => {
-    const storedChats = JSON.parse(localStorage.getItem("chats")) || [];
-    setChats(storedChats);
+    if (isLoaded && user) {
+      // Migration des données existantes (une seule fois)
+      migrateExistingData(user.id);
 
-    if (storedChats.length > 0) {
-      setActiveChat(storedChats[0].id);
+      // Charger les chats de l'utilisateur
+      const userChats = getUserData(user.id, "chats", []);
+      setChats(userChats);
+
+      if (userChats.length > 0) {
+        setActiveChat(userChats[0].id);
+      }
     }
-  }, []);
+  }, [user, isLoaded]);
 
   const handleStartChat = () => {
     setIsChatting(true);
@@ -31,6 +45,8 @@ const App = () => {
   };
 
   const createNewChat = (initialMessage = "") => {
+    if (!user) return; // Sécurité : pas de chat sans utilisateur
+
     const newChat = {
       id: uuidv4(),
       displayId: `Chat ${new Date().toLocaleDateString(
@@ -49,8 +65,10 @@ const App = () => {
 
     const updatedChats = [newChat, ...chats];
     setChats(updatedChats);
-    localStorage.setItem("chats", JSON.stringify(updatedChats));
-    localStorage.setItem(newChat.id, JSON.stringify(newChat.messages));
+
+    // Sauvegarder avec le système utilisateur
+    setUserData(user.id, "chats", updatedChats);
+    setUserData(user.id, `chat_${newChat.id}`, newChat.messages);
     setActiveChat(newChat.id);
   };
 

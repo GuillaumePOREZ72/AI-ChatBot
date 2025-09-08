@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useUser, SignOutButton } from "@clerk/clerk-react";
+import { getUserData, setUserData, removeUserData } from "../utils/userStorage";
 
 const GOOGLE_AI_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
@@ -73,11 +74,11 @@ const ChatBotApp = ({
   }, [activeChat, chats]);
 
   useEffect(() => {
-    if (activeChat) {
-      const storedMessages = JSON.parse(localStorage.getItem(activeChat)) || [];
+    if (activeChat && user) {
+      const storedMessages = getUserData(user.id, `chat_${activeChat}`, []);
       setMessages(storedMessages);
     }
-  }, [activeChat]);
+  }, [activeChat, user]);
 
   const handleEmojiSelect = (emoji) => {
     setInputValue((prevInput) => prevInput + emoji.native);
@@ -105,7 +106,7 @@ const ChatBotApp = ({
 
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
-      localStorage.setItem(activeChat, JSON.stringify(updatedMessages));
+      setUserData(user.id, `chat_${activeChat}`, updatedMessages);
       setInputValue("");
       setIsTyping(true);
 
@@ -150,10 +151,7 @@ const ChatBotApp = ({
 
         const updatedMessagesWithResponse = [...updatedMessages, newResponse];
         setMessages(updatedMessagesWithResponse);
-        localStorage.setItem(
-          activeChat,
-          JSON.stringify(updatedMessagesWithResponse)
-        );
+        setUserData(user.id, `chat_${activeChat}`, updatedMessagesWithResponse);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -174,10 +172,14 @@ const ChatBotApp = ({
   };
 
   const handleDeleteChat = (id) => {
+    if (!user) return; // Sécurité
+
     const updatedChats = chats.filter((chat) => chat.id !== id);
     setChats(updatedChats);
-    localStorage.setItem("chats", JSON.stringify(updatedChats));
-    localStorage.removeItem(id);
+
+    // Sauvegarder avec le système utilisateur
+    setUserData(user.id, "chats", updatedChats);
+    removeUserData(user.id, `chat_${id}`);
 
     if (id === activeChat) {
       const newActiveChat = updatedChats.length > 0 ? updatedChats[0].id : null;
@@ -224,9 +226,31 @@ const ChatBotApp = ({
         <div className="chat-title">
           <div className="chat-title-left">
             <h3>Chat With AI</h3>
-            <span className="user-info">
-              👋 {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-            </span>
+            <div className="user-profile">
+              <div className="user-avatar">
+                {user?.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt="Avatar"
+                    className="avatar-img"
+                  />
+                ) : (
+                  <div className="avatar-placeholder">
+                    {(
+                      user?.firstName?.[0] ||
+                      user?.emailAddresses[0]?.emailAddress[0] ||
+                      "?"
+                    ).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="user-details">
+                <span className="user-name">
+                  {user?.firstName || user?.username || "Utilisateur"}
+                </span>
+                <span className="user-status">En ligne</span>
+              </div>
+            </div>
           </div>
           <div className="chat-title-right">
             <i className="bx bx-menu" onClick={() => setShowChatList(true)}></i>
