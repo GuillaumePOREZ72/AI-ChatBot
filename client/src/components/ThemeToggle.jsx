@@ -1,12 +1,12 @@
-import { useTheme } from '../contexts/ThemeContext';
-import './ThemeToggle.css';
+import { useTheme } from "../contexts/ThemeContext";
+import "./ThemeToggle.css";
 
 /**
  * COMPOSANT BOUTON DE BASCULEMENT DU THÈME
- * 
+ *
  * Ce composant affiche un bouton qui permet de basculer
  * entre le thème clair et le thème sombre.
- * 
+ *
  * Il utilise notre hook personnalisé useTheme() pour :
  * - Connaître le thème actuel
  * - Appeler la fonction toggleTheme() quand on clique
@@ -19,8 +19,8 @@ const ThemeToggle = () => {
     <button
       className="theme-toggle"
       onClick={toggleTheme}
-      title={`Basculer vers le thème ${isDark ? 'clair' : 'sombre'}`}
-      aria-label={`Basculer vers le thème ${isDark ? 'clair' : 'sombre'}`}
+      title={`Basculer vers le thème ${isDark ? "clair" : "sombre"}`}
+      aria-label={`Basculer vers le thème ${isDark ? "clair" : "sombre"}`}
     >
       {/* 
         ICÔNES CONDITIONNELLES
@@ -40,16 +40,6 @@ const ThemeToggle = () => {
           <i className="bx bx-moon" />
         )}
       </div>
-      
-      {/* 
-        INDICATEUR VISUEL OPTIONNEL
-        
-        On peut ajouter un petit texte pour clarifier l'action
-        (optionnel, peut être masqué sur mobile)
-      */}
-      <span className="theme-toggle-text">
-        {isDark ? 'Clair' : 'Sombre'}
-      </span>
     </button>
   );
 };

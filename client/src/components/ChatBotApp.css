@@ -211,7 +211,7 @@
 }
 
 .logout-btn {
-  font-size: 1.8rem;
+  font-size: 2.5rem;
   color: #ff6b6b;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -362,7 +362,7 @@
   color: var(--text-accent); /* Variable CSS */
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 0.5rem;
+  padding: 1rem;
   border-radius: 50%;
 }
 
@@ -390,7 +390,7 @@
   background: var(--glass-bg); /* Variable CSS */
   border: 1px solid var(--border-color); /* Variable CSS */
   border-radius: 25px;
-  padding: 1rem 2rem;
+  padding: 1rem 1rem;
   font-size: 1.6rem;
   color: var(--text-primary); /* Variable CSS */
   transition: all 0.3s ease;
